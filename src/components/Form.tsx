@@ -1,4 +1,3 @@
-import { sign } from 'crypto';
 import React, { useEffect, useState } from 'react'
 import { FieldValues, useForm } from 'react-hook-form';
 
@@ -49,8 +48,8 @@ function Form({ auth, setauth, setlogedin }: InputProps) {
         setauth(false);
       }
       if (response.message == 'User signed up successfully') {
-setsignup(false);      }
-console.log(response);
+        setsignup(false);
+      }
     }
     ).catch((error) => {
       console.error('Error occurred during form submission', error);
@@ -63,9 +62,9 @@ console.log(response);
     if (signup) {
       setdata(prev => (["Name", ...prev]))
     }
-else{
-  setdata(["Email", "Password"])
-}
+    else {
+      setdata(["Email", "Password"])
+    }
   }, [signup])
   return (
     <div className='fixed inset-0 z-50 bg-opacity-15 backdrop-blur-[2px] flex justify-center items-center text-black bg-white'>

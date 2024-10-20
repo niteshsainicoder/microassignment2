@@ -5,12 +5,27 @@ import { Chart, registerables } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import Filter from './Filter'; // Assuming you have a filter component
 import useDataContext from '@/app/ContextApi';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
-Chart.register(...registerables);
+Chart.register(...registerables, zoomPlugin);
+
+interface DataEntry {
+    _id: {
+        Gender: string;
+        Age: string;
+    };
+    averageA: number;
+    averageB: number;
+    averageC: number;
+    averageD: number;
+    averageE: number;
+    averageF: number;
+}
+
 
 type Dataset = {
     label: string;
-    data: any[];
+    data: number[];
     borderColor: string;
     backgroundColor: string;
     borderWidth: number;
@@ -19,9 +34,8 @@ type Dataset = {
 
 const BarLineChart: React.FC = () => {
     const { data, filters } = useDataContext();
-
     const [filter, setfilter] = useState(false);
-    const [chartData, setChartData] = useState<{ labels: String[], datasets: Dataset[]}>({
+    const [chartData, setChartData] = useState<{ labels: string[], datasets: Dataset[] }>({
         labels: [],
         datasets: []
     });
@@ -29,30 +43,28 @@ const BarLineChart: React.FC = () => {
     // Fetch the data from the server (pre-filtered by backend pipeline)
 
 
-
     const generateShareableUrl = () => {
-        const params = new URLSearchParams();
-        params.append('startDate', filters.dateRange.startDate.toString());
-        params.append('endDate', filters.dateRange.endDate.toString());
-        params.append('age', filters.ageRange.toString());
-        params.append('gender', filters.gender.toString());
+            const params = new URLSearchParams();
+            params.append('startDate', filters.dateRange.startDate.toString());
+            params.append('endDate', filters.dateRange.endDate.toString());
+            params.append('age', filters.ageRange.toString());
+            params.append('gender', filters.gender.toString());
 
-        const shareableUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-        console.log(shareableUrl, 'shareable url');
-        return shareableUrl;
+            const shareableUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+            console.log(shareableUrl, 'shareable url');
+            return shareableUrl;
+        
     };
 
     // Copy the generated URL to clipboard
     const handleShareClick = () => {
         const shareableUrl = generateShareableUrl();
         if (navigator.share) {
-            // Use the Web Share API for mobile devices
             navigator.share({
                 title: 'Chart with Filters',
                 url: shareableUrl,
             }).catch((error) => console.error('Error sharing', error));
         } else {
-            // Fallback: copy to clipboard
             navigator.clipboard.writeText(shareableUrl)
                 .then(() => alert('URL copied to clipboard!'))
                 .catch((err) => console.error('Error copying text: ', err));
@@ -63,7 +75,7 @@ const BarLineChart: React.FC = () => {
     useEffect(() => {
         const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-        const datasets = data.map((entry: any) => ({
+        const datasets = data.map((entry: DataEntry) => ({
             label: `${entry._id.Gender} (Age ${entry._id.Age})`,
             data: [
                 entry.averageA, entry.averageB, entry.averageC,
@@ -75,20 +87,13 @@ const BarLineChart: React.FC = () => {
             borderWidth: 1,
 
         }));
-
-     
-        // ...
-
         setChartData({
             labels,
             datasets: datasets as Dataset[]
         });
         generateShareableUrl();
 
-       
-
-
-    }, [data]); // Only runs once on component mount
+    }, [data]);
 
     return (
         <div>
@@ -122,8 +127,19 @@ const BarLineChart: React.FC = () => {
                                     display: true,
                                     text: ' Bar Chart',
                                 },
+                                zoom: {
+                                    pan: {
+                                        enabled: true,
+                                        mode: 'x',  // Allow panning on the x-axis
+                                    },
+                                    zoom: {
+                                        enabled: true,
+                                        mode: 'x',  // Enable zooming on the x-axis
+                                    }
+                                }
                             },
-                        }} height={400} />
+                        }}
+                        height={400} />
                 </div>
                 <div className='flex flex-wrap'>
                     <Line data={chartData}
@@ -137,6 +153,18 @@ const BarLineChart: React.FC = () => {
                                     display: true,
                                     text: ' Line Chart',
                                 },
+                                zoom: {
+                                    pan: {
+                                        enabled: true,
+                                        mode: 'y',  // Allow panning on the x-axis
+                                    },
+                                    zoom: {
+                                        enabled: true,
+                                        mode: 'y',  // Enable zooming on the x-axis
+                                    }
+                                }
+
+
                             },
                         }} height={400}
                     />

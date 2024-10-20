@@ -53,13 +53,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         localStorage.setItem('filters', JSON.stringify(filters));
     }, [filters]);
 
-    useEffect(() => {
-        console.log(data, "fetched data")
-    }, [data])
+
     useEffect(() => {
         if (localStorage.getItem('filters') && filters.ageRange === '' && filters.gender === '' && filters.dateRange.startDate === 44838 && filters.dateRange.endDate === 44864) {
             setFilters(JSON.parse(localStorage.getItem('filters') || '{}'))
-
         }
     }, [])
     return (
