@@ -56,13 +56,14 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     useEffect(() => {
         fetchAggregatedData();
         localStorage.setItem('filters', JSON.stringify(filters));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters]);
 
     useEffect(() => {
         if (localStorage.getItem('filters') && filters.ageRange === '' && filters.gender === '' && filters.dateRange.startDate === 44838 && filters.dateRange.endDate === 44864) {
             setFilters(JSON.parse(localStorage.getItem('filters') || '{}'));
         }
-    }, []);
+    }, [filters.ageRange, filters.dateRange.endDate, filters.dateRange.startDate, filters.gender]);
 
     return (
         <DataContext.Provider value={{ data, filters, setFilters, logedin, setlogedin }}>

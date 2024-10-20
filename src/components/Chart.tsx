@@ -1,17 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Chart, registerables } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
-import Filter from './Filter'; 
+import Filter from './Filter';
 import useDataContext from '@/app/ContextApi';
-import zoomPlugin from 'chartjs-plugin-zoom';
-import { ZoomPluginOptions } from 'chartjs-plugin-zoom/types/options';
-
+import zoomPlugin from 'chartjs-plugin-zoom'; // Correct import
+// Correct registration of Chart.js plugins
 Chart.register(...registerables, zoomPlugin);
-
-type DeepPartial<T> = {
-    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
 
 type Dataset = {
     label: string;
@@ -117,14 +114,15 @@ const BarLineChart: React.FC = () => {
                                     text: 'Bar Chart',
                                 },
                                 zoom: {
-                                    pan: {
-                                        enabled: true,
-                                        mode: 'x',
-                                    },
                                     zoom: {
-                                        enabled: true,
-                                        mode: 'x',
-                                    } as DeepPartial<ZoomPluginOptions>
+                                        wheel: {
+                                            enabled: true,
+                                        },
+                                        pinch: {
+                                            enabled: true
+                                        },
+                                        mode: 'xy',
+                                    }
                                 }
                             },
                         }}
@@ -145,15 +143,16 @@ const BarLineChart: React.FC = () => {
                                     text: 'Line Chart',
                                 },
                                 zoom: {
-                                    pan: {
-                                        enabled: true,
-                                        mode: 'x',
-                                    },
                                     zoom: {
-                                        enabled: true,
-                                        mode: 'x',
-                                    } as DeepPartial<ZoomPluginOptions>
-                                },
+                                        wheel: {
+                                            enabled: true,
+                                        },
+                                        pinch: {
+                                            enabled: true
+                                        },
+                                        mode: 'xy',
+                                    }
+                                }
                             },
                         }}
                         height={400}
