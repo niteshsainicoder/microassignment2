@@ -8,13 +8,18 @@ interface Filter {
     dateRange: { startDate: number; endDate: number };
 }
 
+interface DataItem {
+    // Define properties based on your data structure
+    id: number;
+    name: string; // Example properties
+}
+
 interface DataContextType {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any[]; // Adjust the type based on your actual data structure
+    data: DataItem[]; // Adjust the type based on your actual data structure
     filters: Filter;
     setFilters: React.Dispatch<React.SetStateAction<Filter>>;
     logedin: boolean;
-    setlogedin: React.Dispatch<React.SetStateAction<boolean>>
+    setlogedin: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // Create context with the correct types
@@ -25,8 +30,7 @@ interface DataProviderProps {
 }
 
 export const DataProvider = ({ children }: DataProviderProps) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [data, setData] = useState<any[]>([]); // Adjust the type based on your data
+    const [data, setData] = useState<DataItem[]>([]); // Use DataItem instead of any
     const [filters, setFilters] = useState<Filter>({
         ageRange: '',
         gender: '',
@@ -37,11 +41,12 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     // Function to fetch aggregated data from your server-side pipeline
     const fetchAggregatedData = async () => {
         try {
-
-
             await fetch(`http://localhost:3000/api/data?age=${filters.ageRange}&gender=${filters.gender}&startDate=${filters.dateRange.startDate}&endDate=${filters.dateRange.endDate}`, {
                 method: 'GET',
-            }).then((res) => res.json()).then((res) => setData(res)).catch((err) => console.log(err));
+            })
+                .then((res) => res.json())
+                .then((res) => setData(res))
+                .catch((err) => console.log(err));
         } catch (error) {
             console.error('Error fetching aggregated data:', error);
         }
@@ -53,12 +58,12 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         localStorage.setItem('filters', JSON.stringify(filters));
     }, [filters]);
 
-
     useEffect(() => {
         if (localStorage.getItem('filters') && filters.ageRange === '' && filters.gender === '' && filters.dateRange.startDate === 44838 && filters.dateRange.endDate === 44864) {
-            setFilters(JSON.parse(localStorage.getItem('filters') || '{}'))
+            setFilters(JSON.parse(localStorage.getItem('filters') || '{}'));
         }
-    }, [])
+    }, []);
+
     return (
         <DataContext.Provider value={{ data, filters, setFilters, logedin, setlogedin }}>
             {children}

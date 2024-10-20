@@ -5,7 +5,7 @@ import { DateRange, RangeKeyDict } from 'react-date-range'; // Importing types
 import useDataContext from '@/app/ContextApi';
 
 interface FilterProps {
-  setfilter: (arg: boolean) => void;
+  setfilter: (arg0:React.SetStateAction<boolean>) => void;
 }
 
 const Filter: React.FC<FilterProps> = ({ setfilter }) => {
