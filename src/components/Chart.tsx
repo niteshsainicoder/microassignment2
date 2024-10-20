@@ -43,21 +43,24 @@ const BarLineChart: React.FC = () => {
         console.log(shareableUrl, 'shareable url');
         return shareableUrl;
     }, [filters]);
-
     const handleShareClick = () => {
         const shareableUrl = generateShareableUrl();
-        if (navigator.share) {
+        
+        // Ensure this code only runs on the client side
+        if (typeof navigator !== "undefined" && navigator.share) {
             navigator.share({
                 title: 'Chart with Filters',
                 url: shareableUrl,
             }).catch((error) => console.error('Error sharing', error));
-        } else {
+        } else if (typeof navigator !== "undefined" && navigator.clipboard) {
             navigator.clipboard.writeText(shareableUrl)
                 .then(() => alert('URL copied to clipboard!'))
                 .catch((err) => console.error('Error copying text: ', err));
+        } else {
+            alert('Sharing not supported in this environment');
         }
     };
-
+    
     useEffect(() => {
         const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
