@@ -1,18 +1,18 @@
-// components/BarLineChart.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Chart, registerables } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
-import Filter from './Filter'; // Assuming you have a filter component
+import Filter from './Filter'; 
 import useDataContext from '@/app/ContextApi';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { ZoomPluginOptions } from 'chartjs-plugin-zoom/types/options';
-import { DeepPartial } from 'chartjs-plugin-zoom/types/options';
+
 Chart.register(...registerables, zoomPlugin);
 
+type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 
-
-        
 type Dataset = {
     label: string;
     data: number[];
@@ -47,7 +47,6 @@ const BarLineChart: React.FC = () => {
         return shareableUrl;
     }, [filters]);
 
-    // Copy the generated URL to clipboard
     const handleShareClick = () => {
         const shareableUrl = generateShareableUrl();
         if (navigator.share) {
@@ -62,28 +61,24 @@ const BarLineChart: React.FC = () => {
         }
     };
 
-  
-
     useEffect(() => {
         const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const datasets: Dataset[] = data.map((entry:any) => ({
+        const datasets: Dataset[] = data.map((entry: any) => ({
             label: `${entry._id.Gender} (Age ${entry._id.Age})`,
             data: [
                 entry.averageA, entry.averageB, entry.averageC,
                 entry.averageD, entry.averageE, entry.averageF
             ],
-            borderColor: entry._id.Gender === 'Male' ? '#007bff' : '#ff6384', // Color based on gender
+            borderColor: entry._id.Gender === 'Male' ? '#007bff' : '#ff6384',
             backgroundColor: entry._id.Gender === 'Male'
                 ? (entry._id.Age === '>25' ? '#cce7ff' : '#b3d9ff')
-                : (entry._id.Age === '>25' ? '#ffccf2' : '#ffc1e3'), // Color based on age and gender
+                : (entry._id.Age === '>25' ? '#ffccf2' : '#ffc1e3'),
             borderWidth: 1,
         }));
 
         setChartData({ labels, datasets });
-        // No need to call generateShareableUrl here; it should be used in a different context
-    }, [data]);
+    }, [data, filters.ageRange, filters.dateRange.startDate, filters.dateRange.endDate, filters.gender]);
 
     return (
         <div>
@@ -124,11 +119,11 @@ const BarLineChart: React.FC = () => {
                                 zoom: {
                                     pan: {
                                         enabled: true,
-                                        mode: 'x', // Allow panning on the x-axis
+                                        mode: 'x',
                                     },
                                     zoom: {
                                         enabled: true,
-                                        mode: 'x', // Enable zooming on the x-axis
+                                        mode: 'x',
                                     } as DeepPartial<ZoomPluginOptions>
                                 }
                             },
@@ -152,11 +147,11 @@ const BarLineChart: React.FC = () => {
                                 zoom: {
                                     pan: {
                                         enabled: true,
-                                        mode: 'x', // Allow panning on the x-axis
+                                        mode: 'x',
                                     },
                                     zoom: {
                                         enabled: true,
-                                        mode: 'x', // Enable zooming on the x-axis
+                                        mode: 'x',
                                     } as DeepPartial<ZoomPluginOptions>
                                 },
                             },
