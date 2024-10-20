@@ -21,6 +21,7 @@ type Dataset = {
 const BarLineChart: React.FC = () => {
     const { data, filters } = useDataContext();
     const [filter, setFilter] = useState(false);
+    const [GenerateShareableUrl,setGenerateShareableUrl] = useState(false);
     const [chartData, setChartData] = useState<{ labels: string[]; datasets: Dataset[] }>({
         labels: [],
         datasets: []
@@ -43,24 +44,26 @@ const BarLineChart: React.FC = () => {
         console.log(shareableUrl, 'shareable url');
         return shareableUrl;
     }, [filters]);
-    const handleShareClick = () => {
-        const shareableUrl = generateShareableUrl();
-        
-        // Ensure this code only runs on the client side
-        if (typeof navigator !== "undefined" && navigator.share) {
-            navigator.share({
-                title: 'Chart with Filters',
-                url: shareableUrl,
-            }).catch((error) => console.error('Error sharing', error));
-        } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-            navigator.clipboard.writeText(shareableUrl)
-                .then(() => alert('URL copied to clipboard!'))
-                .catch((err) => console.error('Error copying text: ', err));
-        } else {
-            alert('Sharing not supported in this environment');
-        }
-    };
-    
+    useEffect(() => {
+        const handleShareClick = () => {
+            const shareableUrl = generateShareableUrl();
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Chart with Filters',
+                    url: shareableUrl,
+                }).catch((error) => console.error('Error sharing', error));
+            } else {
+                navigator.clipboard.writeText(shareableUrl)
+                    .then(() => alert('URL copied to clipboard!'))
+                    .catch((err) => console.error('Error copying text: ', err));
+            }
+        };
+
+        // Call your function inside useEffect
+        handleShareClick();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [GenerateShareableUrl]); // Empty dependency arra
     useEffect(() => {
         const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -86,7 +89,7 @@ const BarLineChart: React.FC = () => {
                 <span onClick={() => setFilter(!filter)} className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 antialiased'>
                     Filter
                 </span>
-                <span onClick={handleShareClick} className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-transparent hover:bg-gray-300 text-gray-700 antialiased'>
+                <span onClick={() => setGenerateShareableUrl(!GenerateShareableUrl)} className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-transparent hover:bg-gray-300 text-gray-700 antialiased'>
                     Share ↗
                 </span>
             </div>
