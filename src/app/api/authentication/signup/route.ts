@@ -4,13 +4,14 @@ import connectDB from "@/utils/dbConnect"; // adjust the path if needed
 import User from "@/models/usermodal"; // adjust the path if needed
 
 export async function POST(request: NextRequest) {
-    await connectDB(); // Connect to the database
+    console.log( await connectDB()); // Connect to the database
 
     const {Name, Email, Password } = await request.json();
 
     // Check if email already exists
     const existingUser = await User.findOne({ email: Email });
     if (existingUser) {
+        console.log("Email already exists");
         return NextResponse.json({ message: "Email already exists" }, { status: 400 });
     }
 
