@@ -6,7 +6,8 @@ import { Chart, registerables } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import Filter from './Filter';
 import useDataContext from '@/app/ContextApi';
-import zoomPlugin from 'chartjs-plugin-zoom'; // Correct import
+import zoomPlugin from 'chartjs-plugin-zoom';
+
 // Correct registration of Chart.js plugins
 Chart.register(...registerables, zoomPlugin);
 
@@ -21,7 +22,7 @@ type Dataset = {
 const BarLineChart: React.FC = () => {
     const { data, filters } = useDataContext();
     const [filter, setFilter] = useState(false);
-    const [GenerateShareableUrl,setGenerateShareableUrl] = useState(false);
+    const [GenerateShareableUrl, setGenerateShareableUrl] = useState(false);
     const [chartData, setChartData] = useState<{ labels: string[]; datasets: Dataset[] }>({
         labels: [],
         datasets: []
@@ -40,30 +41,39 @@ const BarLineChart: React.FC = () => {
             params.append('gender', filters.gender.toString());
         }
 
-        const shareableUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-        console.log(shareableUrl, 'shareable url');
-        return shareableUrl;
+        // Only use window in the browser environment
+     
+            const shareableUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+          navigator.clipboard.writeText(shareableUrl);
+            console.log(shareableUrl, 'shareable url');
+          return shareableUrl;
+        
+        return '';
     }, [filters]);
+
     useEffect(() => {
         const handleShareClick = () => {
             const shareableUrl = generateShareableUrl();
 
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Chart with Filters',
-                    url: shareableUrl,
-                }).catch((error) => console.error('Error sharing', error));
-            } else {
-                navigator.clipboard.writeText(shareableUrl)
-                    .then(() => alert('URL copied to clipboard!'))
-                    .catch((err) => console.error('Error copying text: ', err));
+            if (shareableUrl) {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Chart with Filters',
+                        url: shareableUrl,
+                    }).catch((error) => console.error('Error sharing', error));
+                } else {
+                    navigator.clipboard.writeText(shareableUrl)
+                        .then(() => alert('URL copied to clipboard!'))
+                        .catch((err) => console.error('Error copying text: ', err));
+                }
             }
         };
 
-        // Call your function inside useEffect
-        handleShareClick();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [GenerateShareableUrl]); // Empty dependency arra
+        if (GenerateShareableUrl) {
+            handleShareClick();
+        }
+    }, [GenerateShareableUrl]);
+
     useEffect(() => {
         const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -89,7 +99,7 @@ const BarLineChart: React.FC = () => {
                 <span onClick={() => setFilter(!filter)} className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 antialiased'>
                     Filter
                 </span>
-                <span onClick={() => setGenerateShareableUrl(!GenerateShareableUrl)} className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-transparent hover:bg-gray-300 text-gray-700 antialiased'>
+                <span onClick={() => setGenerateShareableUrl(!generateShareableUrl)} className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-transparent hover:bg-gray-300 text-gray-700 antialiased'>
                     Share ↗
                 </span>
             </div>
