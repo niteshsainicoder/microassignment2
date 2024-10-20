@@ -1,11 +1,13 @@
 // components/BarLineChart.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Chart, registerables } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import Filter from './Filter'; // Assuming you have a filter component
 import useDataContext from '@/app/ContextApi';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import { ZoomPluginOptions } from 'chartjs-plugin-zoom/types/options';
+import { _DeepPartialObject } from 'chartjs-plugin-zoom/types/options';
 
 Chart.register(...registerables, zoomPlugin);
 
@@ -22,7 +24,6 @@ interface DataEntry {
     averageF: number;
 }
 
-
 type Dataset = {
     label: string;
     data: number[];
@@ -31,30 +32,26 @@ type Dataset = {
     borderWidth: number;
 };
 
-
 const BarLineChart: React.FC = () => {
     const { data, filters } = useDataContext();
-    const [filter, setfilter] = useState(false);
+    const [filterVisible, setFilterVisible] = useState(false);
     const [chartData, setChartData] = useState<{ labels: string[], datasets: Dataset[] }>({
         labels: [],
         datasets: []
     });
 
-    // Fetch the data from the server (pre-filtered by backend pipeline)
+    // Generate shareable URL with the current filters
+    const generateShareableUrl = useCallback(() => {
+        const params = new URLSearchParams();
+        params.append('startDate', filters.dateRange.startDate.toString());
+        params.append('endDate', filters.dateRange.endDate.toString());
+        params.append('age', filters.ageRange.toString());
+        params.append('gender', filters.gender.toString());
 
-
-    const generateShareableUrl = () => {
-            const params = new URLSearchParams();
-            params.append('startDate', filters.dateRange.startDate.toString());
-            params.append('endDate', filters.dateRange.endDate.toString());
-            params.append('age', filters.ageRange.toString());
-            params.append('gender', filters.gender.toString());
-
-            const shareableUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-            console.log(shareableUrl, 'shareable url');
-            return shareableUrl;
-        
-    };
+        const shareableUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+        console.log(shareableUrl, 'shareable url');
+        return shareableUrl;
+    }, [filters]);
 
     // Copy the generated URL to clipboard
     const handleShareClick = () => {
@@ -71,7 +68,6 @@ const BarLineChart: React.FC = () => {
         }
     };
 
-
     useEffect(() => {
         const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -81,31 +77,45 @@ const BarLineChart: React.FC = () => {
                 entry.averageA, entry.averageB, entry.averageC,
                 entry.averageD, entry.averageE, entry.averageF
             ],
-
-            borderColor: entry._id.Gender === 'Male' ? '#007bff' : '#ff6384', // Color based on gender
-            backgroundColor: entry._id.Gender === 'Male' ? (entry._id.Age == '>25' ? '#cce7ff' : '#b3d9ff') : (entry._id.Age == '>25' ? '#ffccf2' : '#ffc1e3'), // Color based on gender
+            borderColor: entry._id.Gender === 'Male' ? '#007bff' : '#ff6384',
+            backgroundColor: entry._id.Gender === 'Male' 
+                ? (entry._id.Age === '>25' ? '#cce7ff' : '#b3d9ff') 
+                : (entry._id.Age === '>25' ? '#ffccf2' : '#ffc1e3'),
             borderWidth: 1,
-
         }));
+
         setChartData({
             labels,
             datasets: datasets as Dataset[]
         });
-        generateShareableUrl();
 
-    }, [data]);
+        // Call to generate shareable URL when data updates
+        generateShareableUrl();
+    }, [data, generateShareableUrl]);
 
     return (
         <div>
             <div className='m-4 pt-12 flex justify-between'>
-                <span onClick={() => setfilter(!filter)} className='text-md font-semibold border-[1px] border-gray-400 px-4   rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 antialiased'>Filter</span>
-                <span onClick={() => handleShareClick()} className='text-md font-semibold border-[1px] border-gray-400 px-4   rounded-md bg-trasparent hover:bg-gray-300 text-gray-700 antialiased'>share ↗</span>
+                <span 
+                    onClick={() => setFilterVisible(!filterVisible)} 
+                    className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 antialiased'
+                >
+                    Filter
+                </span>
+                <span 
+                    onClick={handleShareClick} 
+                    className='text-md font-semibold border-[1px] border-gray-400 px-4 rounded-md bg-transparent hover:bg-gray-300 text-gray-700 antialiased'
+                >
+                    Share ↗
+                </span>
             </div>
-            {filter && <div className='transalate-x-[0]  sm:p-7 mt-14 translate-y-[-20%] sm:translate-y-[-25%]  max-w-screen  sm:w-fit h-full absolute z-40 overflow-hidden '>
-                <Filter setfilter={setfilter} />
-            </div>}
-            <div className='flex justify-center flex-wrap  '>
-                <div className=' flex flex-wrap'>
+            {filterVisible && (
+                <div className='transalate-x-[0] sm:p-7 mt-14 translate-y-[-20%] sm:translate-y-[-25%] max-w-screen sm:w-fit h-full absolute z-40 overflow-hidden'>
+                    <Filter setfilter={setFilterVisible} />
+                </div>
+            )}
+            <div className='flex justify-center flex-wrap'>
+                <div className='flex flex-wrap'>
                     <Bar
                         data={chartData}
                         options={{
@@ -115,34 +125,34 @@ const BarLineChart: React.FC = () => {
                                 bar: {
                                     borderWidth: 1,
                                 },
-
                             },
                             responsive: true,
                             plugins: {
                                 legend: {
                                     display: false
                                 },
-
                                 title: {
                                     display: true,
-                                    text: ' Bar Chart',
+                                    text: 'Bar Chart',
                                 },
                                 zoom: {
                                     pan: {
                                         enabled: true,
-                                        mode: 'x',  // Allow panning on the x-axis
+                                        mode: 'x' as string,
                                     },
                                     zoom: {
                                         enabled: true,
-                                        mode: 'x',  // Enable zooming on the x-axis
+                                        mode: 'x' as string,
                                     }
-                                }
+                                } as _DeepPartialObject<ZoomPluginOptions>
                             },
                         }}
-                        height={400} />
+                        height={400}
+                    />
                 </div>
                 <div className='flex flex-wrap'>
-                    <Line data={chartData}
+                    <Line 
+                        data={chartData}
                         options={{
                             responsive: true,
                             plugins: {
@@ -151,22 +161,21 @@ const BarLineChart: React.FC = () => {
                                 },
                                 title: {
                                     display: true,
-                                    text: ' Line Chart',
+                                    text: 'Line Chart',
                                 },
                                 zoom: {
                                     pan: {
                                         enabled: true,
-                                        mode: 'y',  // Allow panning on the x-axis
+                                        mode: 'x' as string,
                                     },
                                     zoom: {
                                         enabled: true,
-                                        mode: 'y',  // Enable zooming on the x-axis
+                                        mode: 'x' as string,
                                     }
-                                }
-
-
+                                } as _DeepPartialObject<ZoomPluginOptions>
                             },
-                        }} height={400}
+                        }} 
+                        height={400}
                     />
                 </div>
             </div>
